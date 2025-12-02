@@ -5,14 +5,14 @@ import com.zaxxer.hikari.HikariDataSource
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
-import com.musicapi.models.*
+import com.musicapi.models.tables.*
 
 object DatabaseFactory {
     fun init() {
         val database = Database.connect(hikari())
 
         transaction(database) {
-            SchemaUtils.create(Artistas, Albumes, Tracks)
+            SchemaUtils.create(Artists, Albums, Tracks)
         }
     }
 
