@@ -6,9 +6,7 @@ import com.musicapi.models.tables.*
 import org.jetbrains.exposed.sql.ResultRow
 import java.util.UUID
 
-
 // MAPPERS: ResultRow (DB) → Domain Model
-
 
 fun ResultRow.toArtist() = Artist(
     id = this[Artists.id],
@@ -30,14 +28,13 @@ fun ResultRow.toAlbum() = Album(
 fun ResultRow.toTrack() = Track(
     id = this[Tracks.id],
     title = this[Tracks.title],
-    durationSeconds = this[Tracks.durationSeconds],
+    duration = this[Tracks.duration],
     albumId = this[Tracks.albumId],
     createdAt = this[Tracks.createdAt],
     updatedAt = this[Tracks.updatedAt]
 )
 
 // MAPPERS: Domain Model → DTO (API)
-
 
 fun Artist.toDTO() = ArtistDTO(
     id = this.id.toString(),
@@ -59,7 +56,7 @@ fun Album.toDTO() = AlbumDTO(
 fun Track.toDTO() = TrackDTO(
     id = this.id.toString(),
     title = this.title,
-    durationSeconds = this.durationSeconds,
+    duration = this.duration,
     albumId = this.albumId.toString(),
     createdAt = this.createdAt.toString(),
     updatedAt = this.updatedAt.toString()
@@ -87,7 +84,7 @@ fun CreateAlbumDTO.toDomain(id: UUID = UUID.randomUUID()) = Album(
 fun CreateTrackDTO.toDomain(id: UUID = UUID.randomUUID()) = Track(
     id = id,
     title = this.title,
-    durationSeconds = this.durationSeconds,
+    duration = this.duration,
     albumId = UUID.fromString(this.albumId),
     createdAt = java.time.Instant.now(),
     updatedAt = java.time.Instant.now()

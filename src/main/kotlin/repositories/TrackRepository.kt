@@ -38,7 +38,7 @@ class TrackRepository {
         Tracks.insert {
             it[id] = track.id
             it[title] = track.title
-            it[durationSeconds] = track.durationSeconds
+            it[duration] = track.duration
             it[albumId] = track.albumId
             it[createdAt] = track.createdAt
             it[updatedAt] = track.updatedAt
@@ -59,7 +59,7 @@ class TrackRepository {
 
         Tracks.update({ Tracks.id eq id }) {
             it[title] = updatedTrack.title
-            it[durationSeconds] = updatedTrack.durationSeconds
+            it[duration] = updatedTrack.duration
             it[albumId] = updatedTrack.albumId
             it[updatedAt] = Instant.now()
         }

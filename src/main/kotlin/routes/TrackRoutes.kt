@@ -72,7 +72,7 @@ fun Route.trackRoutes() {
                     return@post
                 }
 
-                if (createDTO.durationSeconds <= 0) {
+                if (createDTO.duration <= 0) {
                     call.respond(
                         HttpStatusCode.BadRequest,
                         ErrorResponse("VALIDATION_ERROR", "La duración debe ser mayor a 0")
@@ -97,7 +97,7 @@ fun Route.trackRoutes() {
                 val id = UUID.fromString(call.parameters["id"])
                 val updateDTO = call.receive<UpdateTrackDTO>()
 
-                updateDTO.durationSeconds?.let { duration ->
+                updateDTO.duration?.let { duration ->
                     if (duration <= 0) {
                         call.respond(
                             HttpStatusCode.BadRequest,
@@ -118,7 +118,7 @@ fun Route.trackRoutes() {
 
                 val updatedTrack = existingTrack.copy(
                     title = updateDTO.title ?: existingTrack.title,
-                    durationSeconds = updateDTO.durationSeconds ?: existingTrack.durationSeconds,
+                    duration = updateDTO.duration ?: existingTrack.duration,
                     albumId = updateDTO.albumId?.let { UUID.fromString(it) } ?: existingTrack.albumId,
                     updatedAt = java.time.Instant.now()
                 )

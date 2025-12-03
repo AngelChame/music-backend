@@ -35,13 +35,13 @@ class ArtistRepository {
         artist
     }
 
-    suspend fun update(id: UUID, updatedArtista: Artist): Artist? = dbQuery {
+    suspend fun update(id: UUID, updatedArtist: Artist): Artist? = dbQuery {
         val exists = Artists.select { Artists.id eq id }.singleOrNull()
         if (exists == null) return@dbQuery null
 
         Artists.update({ Artists.id eq id }) {
-            it[name] = updatedArtista.name
-            it[genre] = updatedArtista.genre
+            it[name] = updatedArtist.name
+            it[genre] = updatedArtist.genre
             it[updatedAt] = Instant.now()
         }
 
@@ -55,21 +55,23 @@ class ArtistRepository {
         RelatedRecords(albumsCount = albumsCount)
     }
 
-    suspend fun delete(id: UUID, force: Boolean = false): Boolean = dbQuery {
+    suspend fun delete(id: UUID, force: Boolean = false): Boolean {
         val dependencies = checkDependencies(id)
 
         if (!force && dependencies.albumsCount!! > 0) {
             throw Exception("No se puede eliminar: el artista tiene ${dependencies.albumsCount} álbum(es) relacionado(s)")
         }
 
-        if (force && dependencies.albumsCount!! > 0) {
-            val albumIds = Albums.select { Albums.artistId eq id }
-                .map { it[Albums.id] }
+        return dbQuery {
+            if (force && dependencies.albumsCount!! > 0) {
+                val albumIds = Albums.select { Albums.artistId eq id }
+                    .map { it[Albums.id] }
 
-            Tracks.deleteWhere { albumId inList albumIds }
-            Albums.deleteWhere { artistId eq id }
+                Tracks.deleteWhere { albumId inList albumIds }
+                Albums.deleteWhere { artistId eq id }
+            }
+
+            Artists.deleteWhere { Artists.id eq id } > 0
         }
-
-        Artists.deleteWhere { Artists.id eq id } > 0
     }
 }

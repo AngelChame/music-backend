@@ -4,3 +4,10 @@ ktor:
       - com.musicapi.ApplicationKt.module
   deployment:
     port: 8080
+
+db:
+  url: "jdbc:postgresql://localhost:5432/musica_db"
+  driver: "org.postgresql.Driver"
+  user: "postgres"
+  password: "angel9283"
+  poolSize: 10

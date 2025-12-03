@@ -1,5 +1,7 @@
 package com.musicapi
 
+import com.musicapi.routes.artistRoutes
+import com.musicapi.routes.trackRoutes
 import com.musicapi.database.DatabaseFactory
 import com.musicapi.routes.*
 import io.ktor.serialization.kotlinx.json.*
@@ -23,7 +25,7 @@ fun main() {
 
 fun Application.module() {
     // Inicializar base de datos
-    DatabaseFactory.init()
+    DatabaseFactory.init(environment.config)
 
     // Configurar plugins
     install(ContentNegotiation) {

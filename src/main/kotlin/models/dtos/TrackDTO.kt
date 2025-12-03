@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
 data class TrackDTO(
     val id: String,
     val title: String,
-    val durationSeconds: Int,
+    val duration: Int,
     val albumId: String,
     val createdAt: String,
     val updatedAt: String
@@ -16,13 +16,13 @@ data class TrackDTO(
 @Serializable
 data class CreateTrackDTO(
     val title: String,
-    val durationSeconds: Int,
+    val duration: Int,
     val albumId: String
 )
 
 @Serializable
 data class UpdateTrackDTO(
     val title: String?,
-    val durationSeconds: Int?,
+    val duration: Int?,
     val albumId: String?
 )

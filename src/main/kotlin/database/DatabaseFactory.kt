@@ -1,35 +1,42 @@
 package com.musicapi.database
 
+import com.musicapi.models.tables.Albums
+import com.musicapi.models.tables.Artists
+import com.musicapi.models.tables.Tracks
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
 import com.musicapi.models.tables.*
+import io.ktor.server.config.ApplicationConfig
 
 object DatabaseFactory {
-    fun init() {
-        val database = Database.connect(hikari())
+    fun init(config: ApplicationConfig) {
+        val dbConfig = config.config("db")
+
+        val database = Database.connect(hikari(dbConfig))
 
         transaction(database) {
             SchemaUtils.create(Artists, Albums, Tracks)
         }
     }
 
-    private fun hikari(): HikariDataSource {
-        val config = HikariConfig().apply {
-            driverClassName = "org.postgresql.Driver"
-            jdbcUrl = System.getenv("DATABASE_URL") ?: "jdbc:postgresql://localhost:5432/musica_db"
-            username = System.getenv("DATABASE_USER") ?: "postgres"
-            password = System.getenv("DATABASE_PASSWORD") ?: "postgres"
-            maximumPoolSize = 10
+    private fun hikari(dbConfig: ApplicationConfig): HikariDataSource {
+        val hikariConfig = HikariConfig().apply {
+            driverClassName = dbConfig.property("driver").getString()
+            jdbcUrl = dbConfig.property("url").getString()
+            username = dbConfig.property("user").getString()
+            password = dbConfig.property("password").getString()
+            maximumPoolSize = dbConfig.property("poolSize").getString().toInt()
             isAutoCommit = false
             transactionIsolation = "TRANSACTION_REPEATABLE_READ"
             validate()
         }
-        return HikariDataSource(config)
+        return HikariDataSource(hikariConfig)
     }
 }
+
 
 suspend fun <T> dbQuery(block: () -> T): T =
     org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction { block() }
