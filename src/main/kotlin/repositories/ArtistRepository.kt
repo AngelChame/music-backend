@@ -2,12 +2,16 @@ package com.musicapi.repositories
 
 import com.musicapi.database.dbQuery
 import com.musicapi.models.domain.Artist
+import com.musicapi.models.dtos.AlbumWithTracksDTO
+import com.musicapi.models.dtos.ArtistWithRelationsDTO
 import com.musicapi.models.dtos.RelatedRecords
+import com.musicapi.models.dtos.TrackDTO
 import com.musicapi.models.tables.*
 import com.musicapi.models.mappers.toArtist
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
+import org.jetbrains.exposed.sql.transactions.transaction
 import java.time.Instant
 import java.util.UUID
 
@@ -73,5 +77,40 @@ class ArtistRepository {
 
             Artists.deleteWhere { Artists.id eq id } > 0
         }
+    }
+    suspend fun getByIdWithRelations(id: UUID): ArtistWithRelationsDTO? = dbQuery {
+        val artistRow = Artists.select { Artists.id eq id }.singleOrNull() ?: return@dbQuery null
+
+        val albums = Albums.select { Albums.artistId eq id }.map { albumRow ->
+            val tracks = Tracks.select { Tracks.albumId eq albumRow[Albums.id] }.map { trackRow ->
+                TrackDTO(
+                    id = trackRow[Tracks.id].toString(),
+                    title = trackRow[Tracks.title],
+                    duration = trackRow[Tracks.duration],
+                    albumId = trackRow[Tracks.albumId].toString(),
+                    createdAt = trackRow[Tracks.createdAt].toString(),
+                    updatedAt = trackRow[Tracks.updatedAt].toString()
+                )
+            }
+
+            AlbumWithTracksDTO(
+                id = albumRow[Albums.id].toString(),
+                title = albumRow[Albums.title],
+                releaseYear = albumRow[Albums.releaseYear],
+                artistId = albumRow[Albums.artistId].toString(),
+                createdAt = albumRow[Albums.createdAt].toString(),
+                updatedAt = albumRow[Albums.updatedAt].toString(),
+                tracks = tracks
+            )
+        }
+
+        ArtistWithRelationsDTO(
+            id = artistRow[Artists.id].toString(),
+            name = artistRow[Artists.name],
+            genre = artistRow[Artists.genre],
+            createdAt = artistRow[Artists.createdAt].toString(),
+            updatedAt = artistRow[Artists.updatedAt].toString(),
+            albums = albums
+        )
     }
 }

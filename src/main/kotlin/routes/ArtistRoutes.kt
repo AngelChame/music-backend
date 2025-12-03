@@ -16,8 +16,8 @@ fun Route.artistRoutes() {
     route("/artistas") {
         get {
             try {
-                val artists = repository.getAll()
-                val dtos = artists.map { it.toDTO() }
+                val artistas = repository.getAll()
+                val dtos = artistas.map { it.toDTO() }
                 call.respond(HttpStatusCode.OK, dtos)
             } catch (e: Exception) {
                 call.respond(
@@ -30,10 +30,10 @@ fun Route.artistRoutes() {
         get("/{id}") {
             try {
                 val id = UUID.fromString(call.parameters["id"])
-                val artist = repository.getById(id)
+                val artist = repository.getByIdWithRelations(id)
 
                 if (artist != null) {
-                    call.respond(HttpStatusCode.OK, artist.toDTO())
+                    call.respond(HttpStatusCode.OK, artist)
                 } else {
                     call.respond(
                         HttpStatusCode.NotFound,
@@ -53,6 +53,7 @@ fun Route.artistRoutes() {
             }
         }
 
+
         post {
             try {
                 val createDTO = call.receive<CreateArtistDTO>()
@@ -66,9 +67,9 @@ fun Route.artistRoutes() {
                 }
 
                 val domainModel = createDTO.toDomain()
-                val createdArtist = repository.create(domainModel)
+                val createdArtista = repository.create(domainModel)
 
-                call.respond(HttpStatusCode.Created, createdArtist.toDTO())
+                call.respond(HttpStatusCode.Created, createdArtista.toDTO())
             } catch (e: Exception) {
                 call.respond(
                     HttpStatusCode.InternalServerError,
@@ -82,8 +83,8 @@ fun Route.artistRoutes() {
                 val id = UUID.fromString(call.parameters["id"])
                 val updateDTO = call.receive<UpdateArtistDTO>()
 
-                val existingArtist = repository.getById(id)
-                if (existingArtist == null) {
+                val existingArtista = repository.getById(id)
+                if (existingArtista == null) {
                     call.respond(
                         HttpStatusCode.NotFound,
                         ErrorResponse("NOT_FOUND", "Artista no encontrado")
@@ -91,13 +92,13 @@ fun Route.artistRoutes() {
                     return@put
                 }
 
-                val updatedArtist = existingArtist.copy(
-                    name = updateDTO.name ?: existingArtist.name,
-                    genre = updateDTO.genre ?: existingArtist.genre,
+                val updatedArtista = existingArtista.copy(
+                    name = updateDTO.name ?: existingArtista.name,
+                    genre = updateDTO.genre ?: existingArtista.genre,
                     updatedAt = java.time.Instant.now()
                 )
 
-                val result = repository.update(id, updatedArtist)
+                val result = repository.update(id, updatedArtista)
 
                 if (result != null) {
                     call.respond(HttpStatusCode.OK, result.toDTO())
